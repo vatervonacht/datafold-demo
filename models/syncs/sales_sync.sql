@@ -1,21 +1,20 @@
-WITH org_events AS (
-  SELECT
-     *
-  FROM {{ ref('dim_orgs') }}
-  LEFT JOIN {{ ref('feature_used') }} USING (org_id)
-  WHERE sub_plan IS NULL 
-)
+with org_events as (
+    select *
+    from {{ ref('dim_orgs') }}
+    left join {{ ref('feature_used') }} using (org_id)
+    where sub_plan is null
+),
 
-, final AS (
-    SELECT 
-        DISTINCT ORG_ID
-        , count(*) AS usage
-    FROM org_events
-    WHERE
+final as (
+    select distinct
+        org_id,
+        count(*) as usage
+    from org_events
+    where
         -- select orgs created within the last 60 days, with usage within the 30 days
         event_timestamp::date > ('2022-11-01'::date - 30)
-        AND created_at::date > ('2022-11-01'::date - 60)
-    GROUP BY 1
+        and created_at::date > ('2022-11-01'::date - 60)
+    group by 1
 )
 
-SELECT * FROM final
+select * from final
